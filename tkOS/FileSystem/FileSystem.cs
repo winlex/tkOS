@@ -31,11 +31,6 @@ namespace FileSystem {
                 SuperBlock.move_in = SuperBlock.busy_kl;
                 //Создаем иЛист, сразу отмечаем кластеры, которые заняты инодами, в дальнейшем мы отметим это и в битовой карте
                 inode[] ilist = new inode[SuperBlock.count_kl];
-
-                ilist[0].type = 1;
-                ilist[0].size = 0;
-                SuperBlock.busy_in++;
-
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < ilist.Length; i++)
                     for (int j = 0; j < ilist[i].GetBytes().Length; j++)
@@ -46,11 +41,18 @@ namespace FileSystem {
                 SuperBlock.move_bmi = SuperBlock.busy_kl;
                 //Создаем битовую карту инодов
                 byte[] bmi = new byte[SuperBlock.count_kl];
-                bmi[0] = 1;
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < bmi.Length; i++)
                     fs.WriteByte(bmi[i]);
                 for (int i = 0; i < bmi.Length / SuperBlock.size_kl; i++)
+                    SuperBlock.busy_kl++;
+
+                Record[] hashTable = new Record[SuperBlock.count_kl];
+                fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
+                for (int i = 0; i < hashTable.Length; i++)
+                    for (int j = 0; j < hashTable[i].GetBytes().Length; j++)
+                        fs.WriteByte(hashTable[i].GetBytes()[j]);
+                for (int i = 0; i < hashTable.Length * SuperBlock.size_in / SuperBlock.size_kl; i++)
                     SuperBlock.busy_kl++;
 
                 //Тут будет запись списка кластеров
