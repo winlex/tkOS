@@ -31,6 +31,11 @@ namespace FileSystem {
                 SuperBlock.move_in = SuperBlock.busy_kl;
                 //Создаем иЛист, сразу отмечаем кластеры, которые заняты инодами, в дальнейшем мы отметим это и в битовой карте
                 inode[] ilist = new inode[SuperBlock.count_kl];
+
+                ilist[0].type = 1;
+                ilist[0].size = 0;
+                SuperBlock.busy_in++;
+
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < ilist.Length; i++)
                     for (int j = 0; j < ilist[i].GetBytes().Length; j++)
