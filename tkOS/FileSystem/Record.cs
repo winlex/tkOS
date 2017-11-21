@@ -10,12 +10,10 @@ namespace FileSystem {
         public ushort ID;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 16)]
         public string name;
-        public bool hidden;
         public ushort inode;
 
         public Record(int i) {
             this.ID = (ushort)i;
-            this.hidden = true;
             name = "";
             inode = (ushort)i;
         }
@@ -23,7 +21,6 @@ namespace FileSystem {
         public Record(ushort ID, string name, ushort inode) {
             this.ID = ID;
             this.name = name;
-            hidden = true;
             this.inode = inode;
         }
 

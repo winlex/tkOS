@@ -65,7 +65,14 @@ namespace FileSystem {
         public FileSystem(string path) {
         }
         public int CreateFile(string name) {
-            
+            using(FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                byte[] bmi = new byte[SuperBlock.count_kl];
+                fs.Read(bmi, SuperBlock.move_bmi, SuperBlock.count_kl);
+                int indexI = bmi.ToList<byte>().IndexOf(0);
+                if (indexI == -1)
+                    return 1;
+
+            }
             return 0;
         }
         public int DeleteFile(ushort num) {
