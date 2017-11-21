@@ -11,7 +11,7 @@ namespace FileSystem {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
         public bool[] permissions;
         public bool block;
-        public ushort type; 
+        public char type; //0 - свободный, 1 - файл
         public DateTime dateCreate;
         public DateTime dateModify;
         public ushort UID;
@@ -19,8 +19,8 @@ namespace FileSystem {
         public uint size;
         public ushort adr;
 
-        public inode(ushort UID, ushort GID, ushort type) {
-            this.type = type;
+        public inode(ushort UID, ushort GID) {
+            this.type = '0';
             this.permissions = new bool[9];
             this.permissions[0] = this.permissions[1] = this.permissions[2] = true;
             this.block = false;
