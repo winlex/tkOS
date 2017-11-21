@@ -13,9 +13,8 @@ namespace FileSystem {
         public ushort size_kl; //Размер кластера в Кб
         public ushort count_kl; //Количество кластеров
         public ushort busy_kl; //Занятый кластер
-        public ushort busy_in; //Заныятые иноды
         public ushort move_in;
-        public ushort move_mc;
+        public ushort move_ht;
         public ushort move_bmi;
         public ushort size_in;
         public ushort size_rec;
@@ -25,10 +24,9 @@ namespace FileSystem {
             size_kl = 1024;
             count_kl = size;
             busy_kl = 0;
-            busy_in = 0;
-            move_in = 80;
-            move_mc = 28;//?
-            move_bmi = 28;//?
+            move_in = 0;
+            move_ht = 0;//?
+            move_bmi = 0;//?
             size_in = 80;
             size_rec = 28;
         }

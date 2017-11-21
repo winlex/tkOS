@@ -11,7 +11,8 @@ using System.Security.Cryptography;
 namespace FileSystem {
     public class FileSystem {
         public SuperBlock SuperBlock;
-        public Record mainCatalog;
+        public string CurrentPosition = "/";
+        public user CurrentUser;
 
         public FileSystem(ushort size) {
             SuperBlock = new SuperBlock(size);
@@ -47,6 +48,7 @@ namespace FileSystem {
                 for (int i = 0; i < bmi.Length / SuperBlock.size_kl; i++)
                     SuperBlock.busy_kl++;
 
+                SuperBlock.move_ht = SuperBlock.busy_kl;
                 Record[] hashTable = new Record[SuperBlock.count_kl];
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < hashTable.Length; i++)
@@ -56,8 +58,7 @@ namespace FileSystem {
                     SuperBlock.busy_kl++;
 
                 //Тут будет запись списка кластеров
-
-                SuperBlock.move_mc = SuperBlock.busy_kl;
+                
 
                 fs.Close();
             }
@@ -73,7 +74,27 @@ namespace FileSystem {
                 int indexI = bmi.ToList<byte>().IndexOf(0);
                 if (indexI == -1)
                     return 1;
-
+                Record[] hashTable = new Record[SuperBlock.count_kl];
+                for(int i = 0; i < SuperBlock.count_kl; i++) {
+                    byte[] block = new byte[SuperBlock.size_rec];
+                    fs.Read(block, SuperBlock.move_ht+i* SuperBlock.size_rec, SuperBlock.size_rec);
+                }
+                int hashKey = name.GetHashCode() % 1024;
+                while (hashTable[hashKey].name != "") {
+                    if (hashKey == 1023)
+                        hashKey = 0;
+                    else
+                        hashKey++;
+                }
+                Record record = new Record((ushort)hashKey, CurrentPosition + name, (ushort)indexI);
+                inode inode = new inode(CurrentUser.ID, CurrentUser.GID, 0);
+                bmi[indexI] = 1;
+                fs.Seek(SuperBlock.move_bmi, SeekOrigin.Begin);
+                fs.Write(bmi, 0, bmi.Length);
+                fs.Seek(SuperBlock.move_in + indexI * SuperBlock.size_in, SeekOrigin.Begin);
+                fs.Write(inode.GetBytes(), 0, SuperBlock.size_in);
+                fs.Seek(SuperBlock.move_ht + hashKey * SuperBlock.size_rec, SeekOrigin.Begin);
+                fs.Write(record.GetBytes(), 0, SuperBlock.size_rec);
             }
             return 0;
         }
