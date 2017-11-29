@@ -13,6 +13,9 @@ namespace FileSystem {
         public SuperBlock SuperBlock;
         public string CurrentPosition = "/";
         public user CurrentUser;
+        public user[] users;
+        public group[] groups;
+        public Record[] MainCatalog;
 
         public FileSystem(ushort size) {
             SuperBlock = new SuperBlock(size);
@@ -49,15 +52,20 @@ namespace FileSystem {
                     SuperBlock.busy_kl++;
 
                 SuperBlock.move_ht = SuperBlock.busy_kl;
-                Record[] hashTable = new Record[SuperBlock.count_kl];
+                Record[] hashTable = new Record[64];
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < hashTable.Length; i++)
                     for (int j = 0; j < hashTable[i].GetBytes().Length; j++)
                         fs.WriteByte(hashTable[i].GetBytes()[j]);
                 for (int i = 0; i < hashTable.Length * SuperBlock.size_in / SuperBlock.size_kl; i++)
                     SuperBlock.busy_kl++;
-
-                //Тут будет запись списка кластеров
+                MainCatalog = hashTable;
+                
+                fs.Seek(SuperBlock.size_kl, SeekOrigin.Begin);
+                for (int i = 0; i < SuperBlock.busy_kl; i++)
+                    listKlaster[i] = -1;
+                foreach (short t in listKlaster) 
+                    fs.Write(BitConverter.GetBytes(t), 0, sizeof(short));
                 
 
                 fs.Close();
@@ -79,6 +87,7 @@ namespace FileSystem {
                     byte[] block = new byte[SuperBlock.size_rec];
                     fs.Read(block, SuperBlock.move_ht+i* SuperBlock.size_rec, SuperBlock.size_rec);
                 }
+                //////////////////////////////////////
                 int hashKey = name.GetHashCode() % 1024;
                 while (hashTable[hashKey].name != "") {
                     if (hashKey == 1023)
@@ -95,15 +104,81 @@ namespace FileSystem {
                 fs.Write(inode.GetBytes(), 0, SuperBlock.size_in);
                 fs.Seek(SuperBlock.move_ht + hashKey * SuperBlock.size_rec, SeekOrigin.Begin);
                 fs.Write(record.GetBytes(), 0, SuperBlock.size_rec);
+                fs.Close();
             }
             return 0;
         }
-        public int DeleteFile(ushort num) {
+        public int DeleteFile(string name) {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                Record[] hashTable = new Record[SuperBlock.count_kl];
+                for (int i = 0; i < SuperBlock.count_kl; i++) {
+                    byte[] block = new byte[SuperBlock.size_rec];
+                    fs.Read(block, SuperBlock.move_ht + i * SuperBlock.size_rec, SuperBlock.size_rec);
+                }
+                //////////////////////////////////////
+                int hashKey = name.GetHashCode() % 1024;
+                while (hashTable[hashKey].name != name) {
+                    if (hashKey == 1023)
+                        hashKey = 0;
+                    else
+                        hashKey++;
+                }
+                hashTable[hashKey].name = "";
+                byte[] arrinode = new byte[SuperBlock.size_in];
+                fs.Seek(SuperBlock.move_in + SuperBlock.size_in * hashTable[hashKey].inode, SeekOrigin.Begin);
+                fs.Close();
+            }
             return 0;
         }
         public int CopyFile(ushort num) {
             return 0;
         }
+        public short[] ReadFatTable() {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(SuperBlock.size_kl, SeekOrigin.Begin);
+                short[] temp = new short[SuperBlock.count_kl];
+                for(int i = 0; i < SuperBlock.count_kl; i++) {
+                    byte[] block = new byte[sizeof(short)];
+                    fs.Read(block, 0, sizeof(short));
+                    temp[i] = BitConverter.ToInt16(block,0);
+                }
+                fs.Close();
+                return temp;
+            }
+        }
+        public void WriteFatTable(short[] temp) {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(SuperBlock.size_kl, SeekOrigin.Begin);
+                foreach (short t in temp)
+                    fs.Write(BitConverter.GetBytes(t), 0, sizeof(short));
+                fs.Close();
+            }
+
+        }
+        public Record[] ReadHashTable() {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(SuperBlock.move_ht * SuperBlock.size_kl, SeekOrigin.Begin);
+                Record[] temp = new Record[64];
+                for (int i = 0; i < temp.Length; i++) {
+                    byte[] block = new byte[SuperBlock.size_rec];
+                    fs.Read(block, 0, SuperBlock.size_rec);
+                    temp[i] = new Record(block);
+                }
+                fs.Close();
+                return temp;
+            }
+        }
+        public void WriteHashTable(Record[] temp) {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(SuperBlock.move_ht * SuperBlock.size_kl, SeekOrigin.Begin);
+                for (int i = 0; i < temp.Length; i++)
+                    for (int j = 0; j < temp[i].GetBytes().Length; j++)
+                        fs.WriteByte(temp[i].GetBytes()[j]);
+                fs.Close();
+            }
+
+        }
+
     }
 
 
