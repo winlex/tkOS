@@ -178,7 +178,22 @@ namespace FileSystem {
             }
 
         }
-
+        public inode ReadInode(short index) {
+            byte[] temp = new byte[SuperBlock.size_in];
+            using(FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(SuperBlock.move_in + index * SuperBlock.size_in,SeekOrigin.Begin);
+                fs.Read(temp, 0, SuperBlock.size_in);
+                fs.Close();
+            }
+            return new inode(temp);
+        }
+        public void WriteInode(inode inode, short index) {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(SuperBlock.move_in + index * SuperBlock.size_in, SeekOrigin.Begin);
+                fs.Write(inode.GetBytes(), 0, SuperBlock.size_in);
+                fs.Close();
+            }
+        }
     }
 
 
