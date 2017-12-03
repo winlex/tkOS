@@ -120,11 +120,13 @@ namespace FileSystem {
             hashTable[hashKey].name = "";
             inode inode = ReadInode(hashTable[hashKey].inode);
             short[] fatTable = ReadFatTable();
-            short t = (short)inode.adr;
+            short t = inode.adr;
             inode.adr = -1;
+            SuperBlock.busy_kl--;
             while(t != -1) {
                 t = fatTable[t];
                 fatTable[t] = -1;
+                SuperBlock.busy_kl--;
             }
             WriteFatTable(fatTable);
             WriteInode(inode, hashTable[hashKey].inode);
@@ -143,6 +145,46 @@ namespace FileSystem {
             hashTable[hashKey].name = rename;
             WriteHashTable(hashTable);
 
+            return 0;
+        }
+        public int WriteData(string name, byte[] data) {
+            double needKl = (double)data.Length / (double)SuperBlock.size_kl;
+            int t = Convert.ToInt16(Math.Ceiling(needKl));
+            if (t + SuperBlock.busy_kl > SuperBlock.count_kl)
+                return 1;
+            Record[] hashTable = ReadHashTable();
+            int hashKey = name.GetHashCode() % 1024;
+            while (hashTable[hashKey].name != name) {
+                if (hashKey == 1023)
+                    hashKey = 0;
+                else
+                    hashKey++;
+            }
+            inode inode = ReadInode(hashTable[hashKey].inode);
+            short[] fatTable = ReadFatTable();
+            int index = fatTable.ToList<short>().IndexOf(0);
+            inode.adr = (short)index;
+            fatTable[index] = -1;
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
+                fs.Write(data, 0, 1024);
+                for (int i = 1; i < t; t++) {
+                    fatTable[index] = (short)fatTable.ToList<short>().IndexOf(0);
+                    index = fatTable.ToList<short>().IndexOf(0);
+                    fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
+                    try {
+                        fs.Write(data, i * 1024, 1024);
+                    } catch (Exception e) {
+                        fs.Write(data, i * 1024, 1024);
+                    }
+                    fatTable[index] = -1;
+                }
+                fs.Close();
+            }
+
+
+            WriteInode(inode, hashTable[hashKey].inode);
+            WriteFatTable(fatTable);
             return 0;
         }
         public short[] ReadFatTable() {
