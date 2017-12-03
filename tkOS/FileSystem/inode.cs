@@ -17,7 +17,7 @@ namespace FileSystem {
         public ushort UID;
         public ushort GID;
         public uint size;
-        public ushort adr;
+        public short adr;
 
         public inode(ushort UID, ushort GID, ushort type) {
             this.type = type;
@@ -29,7 +29,7 @@ namespace FileSystem {
             this.UID = UID;
             this.GID = GID;
             this.size = 0;
-            this.adr = 0; ;
+            this.adr = -1; ;
         }
 
         public inode(byte[] arr) {

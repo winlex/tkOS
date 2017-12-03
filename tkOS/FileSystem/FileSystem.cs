@@ -95,7 +95,7 @@ namespace FileSystem {
                     else
                         hashKey++;
                 }
-                Record record = new Record((ushort)hashKey, CurrentPosition + name, (ushort)indexI);
+                Record record = new Record((ushort)hashKey, name, (ushort)indexI);
                 inode inode = new inode(CurrentUser.ID, CurrentUser.GID, 0);
                 bmi[indexI] = 1;
                 fs.Seek(SuperBlock.move_bmi, SeekOrigin.Begin);
@@ -109,28 +109,25 @@ namespace FileSystem {
             return 0;
         }
         public int DeleteFile(string name) {
-            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
-                Record[] hashTable = new Record[SuperBlock.count_kl];
-                for (int i = 0; i < SuperBlock.count_kl; i++) {
-                    byte[] block = new byte[SuperBlock.size_rec];
-                    fs.Read(block, SuperBlock.move_ht + i * SuperBlock.size_rec, SuperBlock.size_rec);
-                }
-                //////////////////////////////////////
-                int hashKey = name.GetHashCode() % 1024;
-                while (hashTable[hashKey].name != name) {
-                    if (hashKey == 1023)
-                        hashKey = 0;
-                    else
-                        hashKey++;
-                }
-                hashTable[hashKey].name = "";
-                byte[] arrinode = new byte[SuperBlock.size_in];
-                fs.Seek(SuperBlock.move_in + SuperBlock.size_in * hashTable[hashKey].inode, SeekOrigin.Begin);
-                fs.Close();
+            Record[] hashTable = ReadHashTable();
+            int hashKey = name.GetHashCode() % 1024;
+            while (hashTable[hashKey].name != name) {
+                if (hashKey == 1023)
+                    hashKey = 0;
+                else
+                    hashKey++;
             }
-            return 0;
-        }
-        public int CopyFile(ushort num) {
+            hashTable[hashKey].name = "";
+            inode inode = ReadInode(hashTable[hashKey].inode);
+            short[] fatTable = ReadFatTable();
+            short t = (short)inode.adr;
+            inode.adr = -1;
+            while(t != -1) {
+                t = fatTable[t];
+                fatTable[t] = -1;
+            }
+            WriteFatTable(fatTable);
+            WriteInode(inode, hashTable[hashKey].inode);
             return 0;
         }
         public short[] ReadFatTable() {
@@ -178,7 +175,7 @@ namespace FileSystem {
             }
 
         }
-        public inode ReadInode(short index) {
+        public inode ReadInode(int index) {
             byte[] temp = new byte[SuperBlock.size_in];
             using(FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(SuperBlock.move_in + index * SuperBlock.size_in,SeekOrigin.Begin);
@@ -187,7 +184,7 @@ namespace FileSystem {
             }
             return new inode(temp);
         }
-        public void WriteInode(inode inode, short index) {
+        public void WriteInode(inode inode, int index) {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(SuperBlock.move_in + index * SuperBlock.size_in, SeekOrigin.Begin);
                 fs.Write(inode.GetBytes(), 0, SuperBlock.size_in);
