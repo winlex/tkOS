@@ -72,9 +72,9 @@ namespace FileSystem {
             }
 
         }
-
         public FileSystem(string path) {
         }
+
         public int CreateFile(string name) {
             using(FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 byte[] bmi = new byte[SuperBlock.count_kl];
@@ -128,6 +128,21 @@ namespace FileSystem {
             }
             WriteFatTable(fatTable);
             WriteInode(inode, hashTable[hashKey].inode);
+            WriteHashTable(hashTable);
+            return 0;
+        }
+        public int Rename(string name, string rename) {
+            Record[] hashTable = ReadHashTable();
+            int hashKey = name.GetHashCode() % 1024;
+            while (hashTable[hashKey].name != name) {
+                if (hashKey == 1023)
+                    hashKey = 0;
+                else
+                    hashKey++;
+            }
+            hashTable[hashKey].name = rename;
+            WriteHashTable(hashTable);
+
             return 0;
         }
         public short[] ReadFatTable() {
