@@ -93,7 +93,7 @@ namespace FileSystem {
             }
             int hashKey = name.GetHashCode() % 64;
             while (hashTable[hashKey].name != "") {
-                if (hashKey == 1023)
+                if (hashKey == 63)
                     hashKey = 0;
                 else
                     hashKey++;
@@ -107,9 +107,9 @@ namespace FileSystem {
         }
         public int DeleteFile(string name) {
             Record[] hashTable = ReadHashTable();
-            int hashKey = name.GetHashCode() % 1024;
+            int hashKey = name.GetHashCode() % 64;
             while (hashTable[hashKey].name != name) {
-                if (hashKey == 1023)
+                if (hashKey == 63)
                     hashKey = 0;
                 else
                     hashKey++;
@@ -132,9 +132,9 @@ namespace FileSystem {
         }
         public int Rename(string name, string rename) {
             Record[] hashTable = ReadHashTable();
-            int hashKey = name.GetHashCode() % 1024;
+            int hashKey = name.GetHashCode() % 64;
             while (hashTable[hashKey].name != name) {
-                if (hashKey == 1023)
+                if (hashKey == 63)
                     hashKey = 0;
                 else
                     hashKey++;
