@@ -187,6 +187,13 @@ namespace FileSystem {
             WriteFatTable(fatTable);
             return 0;
         }
+        public string GetListFiles() {
+            string result = "";
+            foreach (Record t in ReadHashTable())
+                if (t.name != "")
+                    result += t.name + "\t";
+            return result;
+        }
         public short[] ReadFatTable() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(SuperBlock.size_kl, SeekOrigin.Begin);
