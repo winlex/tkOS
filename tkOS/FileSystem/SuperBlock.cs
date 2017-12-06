@@ -28,7 +28,7 @@ namespace FileSystem {
             move_ht = 0;//?
             move_bmi = 0;//?
             size_in = 80;
-            size_rec = 28;
+            size_rec = 20;
         }
 
         public byte[] GetBytes() {
