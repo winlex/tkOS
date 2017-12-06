@@ -168,16 +168,16 @@ namespace FileSystem {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
                 fs.Write(data, 0, 1024);
-                for (int i = 1; i < t; t++) {
+                for (int i = 1; i < t; i++) {
                     fatTable[index] = (short)fatTable.ToList<short>().IndexOf(0);
                     index = fatTable.ToList<short>().IndexOf(0);
                     fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
                     try {
                         fs.Write(data, i * 1024, 1024);
                     } catch (Exception e) {
-                        fs.Write(data, i * 1024, 1024);
+                        fs.Write(data, i * 1024, data.Length % SuperBlock.size_kl);
                     }
-                    fatTable[index] = -1;
+                    fatTable[index] = 0;
                 }
                 fs.Close();
             }
