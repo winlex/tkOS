@@ -8,8 +8,8 @@ using System.IO;
 
 namespace FileSystem {
     public struct inode {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
-        public bool[] permissions;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 9)]
+        public string permissions;
         public bool block;
         public ushort type; 
         public DateTime dateCreate;
@@ -21,8 +21,7 @@ namespace FileSystem {
 
         public inode(ushort UID, ushort GID, ushort type) {
             this.type = type;
-            this.permissions = new bool[9];
-            this.permissions[0] = this.permissions[1] = this.permissions[2] = true;
+            this.permissions = "rwx------";
             this.block = false;
             this.dateCreate = DateTime.Now;
             this.dateModify = DateTime.Now;

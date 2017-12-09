@@ -31,7 +31,7 @@ namespace FileSystem {
             move_in = 0;
             move_ht = 0;//?
             move_bmi = 0;//?
-            size_in = 80;
+            size_in = 56;
             size_rec = 20;
             count_us = 2;
             count_gr = 2;

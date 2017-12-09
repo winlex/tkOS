@@ -272,6 +272,13 @@ namespace FileSystem {
                     result += t.name + "\t";
             return result;
         }
+        public string GetListFilesfFull() {
+            string result = "";
+            foreach (Record t in ReadHashTable())
+                if (t.name != "")
+                    result += t.name + "\t";
+            return result;
+        }
 
         public short[] ReadFatTable() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
