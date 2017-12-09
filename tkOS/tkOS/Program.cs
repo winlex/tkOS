@@ -23,6 +23,7 @@ namespace tkOS {
                         case "RenameFile": disk.Rename(key.Split(' ')[1], key.Split(' ')[2]); break;
                         case "WriteFile": disk.WriteData(key.Split(' ')[1], Encoding.UTF8.GetBytes(key.Split(' ')[2])); break;
                         case "ReadFile": Console.WriteLine(Encoding.UTF8.GetString(disk.ReadData(key.Split(' ')[1], false))); break;
+                        case "CurrentUser": Console.WriteLine(disk.CurrentUser.name); break;
                     }
                 //} catch(Exception e) {
                 //    if (disk == null) Console.WriteLine("Подключите диск!");

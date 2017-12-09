@@ -93,6 +93,7 @@ namespace FileSystem {
                 SuperBlock = new SuperBlock(temp);
                 fs.Close();
             }
+            CurrentUser = ReadUsers()[1];
         }
         public void CloseDisk() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
