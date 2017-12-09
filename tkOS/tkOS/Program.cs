@@ -12,9 +12,11 @@ namespace tkOS {
             while (true) {
                 Console.Write(">");
                 string key = Console.ReadLine();
-                try {
+                //try {
                     switch (key.Split(' ')[0]) {
                         case "CreateDisk": disk = new FileSystem.FileSystem(1024); break;
+                        case "OpenDisk": disk = new FileSystem.FileSystem(key.Split(' ')[1]); break;
+                        case "CloseDisk": disk.CloseDisk(); break;
                         case "ListFile": Console.WriteLine(disk.GetListFiles()); break;
                         case "CreateFile": disk.CreateFile(key.Split(' ')[1]); break;
                         case "DeleteFile": disk.DeleteFile(key.Split(' ')[1]); break;
@@ -22,9 +24,9 @@ namespace tkOS {
                         case "WriteFile": disk.WriteData(key.Split(' ')[1], key.Split(' ')[2]); break;
                         case "ReadFile": Console.WriteLine(disk.ReadData(key.Split(' ')[1], false)); break;
                     }
-                } catch(Exception e) {
-                    if (disk == null) Console.WriteLine("Подключите диск!");
-                }
+                //} catch(Exception e) {
+                //    if (disk == null) Console.WriteLine("Подключите диск!");
+                //}
             }
         }
     }

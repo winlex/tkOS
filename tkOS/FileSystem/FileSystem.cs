@@ -24,6 +24,7 @@ namespace FileSystem {
             File.WriteAllBytes(SuperBlock.count_kl + ".disk", new byte[SuperBlock.count_kl * SuperBlock.size_kl]);
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk",FileMode.Open)) {
                 //Запись суперблока
+                fs.Seek(0, SeekOrigin.Begin);
                 fs.Write(SuperBlock.GetBytes(), 0, SuperBlock.GetBytes().Length);//Отмечаем что один кластер уже занят 
                 SuperBlock.busy_kl++;
 
@@ -74,9 +75,18 @@ namespace FileSystem {
 
         }
         public FileSystem(string path) {
-            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+            using (FileStream fs = File.Open(path, FileMode.Open)) {
                 byte[] temp = new byte[24];
+                fs.Seek(0, SeekOrigin.Begin);
                 fs.Read(temp, 0, 24);
+                SuperBlock = new SuperBlock(temp);
+                fs.Close();
+            }
+        }
+        public void CloseDisk() {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                fs.Seek(0, SeekOrigin.Begin);
+                fs.Write(SuperBlock.GetBytes(), 0, 24);
                 fs.Close();
             }
         }
