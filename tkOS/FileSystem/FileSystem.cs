@@ -340,11 +340,31 @@ namespace FileSystem {
                 Array.Copy(user[i].GetBytes(), 0, temp, i * SuperBlock.size_us, SuperBlock.size_us);
             WriteData("users", temp);
         }
+        public user[] ReadUsers() {
+            byte[] temp = ReadData("users", false);
+            user[] users = new user[SuperBlock.count_us];
+            for (int i = 0; i < SuperBlock.count_us; i++) {
+                byte[] block = new byte[SuperBlock.size_us];
+                Array.Copy(temp, i * SuperBlock.size_us, block, 0, SuperBlock.size_us);
+                users[i] = new user(block);
+            }
+            return users;
+        }
         public void WriteGroups(group[] group) {
             byte[] temp = new byte[SuperBlock.count_gr * SuperBlock.size_gr];
             for (int i = 0; i < SuperBlock.count_gr; i++)
                 Array.Copy(group[i].GetBytes(), 0, temp, i * SuperBlock.size_gr, SuperBlock.size_gr);
             WriteData("groups", temp);
+        }
+        public group[] ReadGroups() {
+            byte[] temp = ReadData("groups", false);
+            group[] groups = new group[SuperBlock.count_gr];
+            for (int i = 0; i < SuperBlock.count_gr; i++) {
+                byte[] block = new byte[SuperBlock.size_gr];
+                Array.Copy(temp, i * SuperBlock.size_gr, block, 0, SuperBlock.size_gr);
+                groups[i] = new group(block);
+            }
+            return groups;
         }
     }
 
