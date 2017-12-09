@@ -180,10 +180,53 @@ namespace FileSystem {
                 fs.Close();
             }
 
-
+            inode.size = (uint)data.Length;
             WriteInode(inode, hashTable[hashKey].inode);
             WriteFatTable(fatTable);
             return 0;
+        }
+        public string ReadData(string name, bool fl) {
+            byte[] data;
+
+            Record[] hashTable = ReadHashTable();
+            int hashKey = name.GetHashCode() % hashTable.Length;
+            while (hashTable[hashKey].name != name) {
+                if (hashKey == hashTable.Length - 1)
+                    hashKey = 0;
+                else
+                    hashKey++;
+            }
+            inode inode = ReadInode(hashTable[hashKey].inode);
+            data = new byte[inode.size];
+            
+            if(inode.adr != -1) {
+                using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                    fs.Seek(inode.adr * SuperBlock.size_kl, SeekOrigin.Begin);
+                    try {
+                        fs.Read(data, 0, SuperBlock.size_kl);
+                    } catch (Exception e) {
+                        fs.Read(data, 0, (int)inode.size);
+                    }
+                    short[] fatTable = ReadFatTable();
+                    int t = fatTable[inode.adr];
+                    if (fl) inode.adr = -1;
+                    int i = 1;
+                    while (t != -1) {
+                        fs.Seek(t * SuperBlock.size_kl, SeekOrigin.Begin);
+                        try {
+                            fs.Read(data, i *SuperBlock.size_kl, SuperBlock.size_kl);
+                        } catch (Exception e) {
+                            fs.Read(data, i * SuperBlock.size_kl, (int)inode.size % SuperBlock.size_kl);
+                        }
+                        int m = t;
+                        t = fatTable[t];
+                        if (fl) fatTable[m] = -1;
+                        i++;
+                    }
+                }
+            }
+
+            return Encoding.UTF8.GetString(data); ;
         }
         public string GetListFiles() {
             string result = "";
