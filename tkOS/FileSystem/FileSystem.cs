@@ -82,6 +82,8 @@ namespace FileSystem {
             CreateFile("groups", true);
             WriteUsers(user);
             WriteGroups(group);
+
+            CurrentUser = user[1];
         }
         public FileSystem(string path) {
             using (FileStream fs = File.Open(path, FileMode.Open)) {
