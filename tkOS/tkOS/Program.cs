@@ -17,6 +17,8 @@ namespace tkOS {
                     case "CreateFile": disk.CreateFile(key.Split(' ')[1]); break;
                     case "DeleteFile": disk.DeleteFile(key.Split(' ')[1]); break;
                     case "RenameFile": disk.Rename(key.Split(' ')[1], key.Split(' ')[2]); break;
+                    case "WriteFile": disk.WriteData(key.Split(' ')[1], key.Split(' ')[2]); break;
+                    case "ReadFile": Console.WriteLine(disk.ReadData(key.Split(' ')[1], false)); break;
                 }
             }
         }

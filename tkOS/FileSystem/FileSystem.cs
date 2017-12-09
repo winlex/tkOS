@@ -145,7 +145,8 @@ namespace FileSystem {
 
             return 0;
         }
-        public int WriteData(string name, byte[] data) {
+        public int WriteData(string name, string str) {
+            byte[] data = Encoding.UTF8.GetBytes(str);
             double needKl = (double)data.Length / (double)SuperBlock.size_kl;
             int t = Convert.ToInt16(Math.Ceiling(needKl));
             if (t + SuperBlock.busy_kl > SuperBlock.count_kl)
@@ -165,7 +166,11 @@ namespace FileSystem {
             fatTable[index] = -1;
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
-                fs.Write(data, 0, SuperBlock.size_in);
+                try {
+                    fs.Write(data, 0, SuperBlock.size_kl);
+                } catch (Exception e) {
+                    fs.Write(data, 0, data.Length);
+                }
                 for (int i = 1; i < t; i++) {
                     fatTable[index] = (short)fatTable.ToList<short>().IndexOf(0);
                     index = fatTable.ToList<short>().IndexOf(0);
@@ -198,8 +203,9 @@ namespace FileSystem {
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
             data = new byte[inode.size];
-            
-            if(inode.adr != -1) {
+            short[] fatTable = ReadFatTable();
+
+            if (inode.adr != -1) {
                 using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                     fs.Seek(inode.adr * SuperBlock.size_kl, SeekOrigin.Begin);
                     try {
@@ -207,7 +213,6 @@ namespace FileSystem {
                     } catch (Exception e) {
                         fs.Read(data, 0, (int)inode.size);
                     }
-                    short[] fatTable = ReadFatTable();
                     int t = fatTable[inode.adr];
                     if (fl) inode.adr = -1;
                     int i = 1;
