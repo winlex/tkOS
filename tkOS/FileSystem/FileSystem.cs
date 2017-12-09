@@ -74,6 +74,11 @@ namespace FileSystem {
 
         }
         public FileSystem(string path) {
+            using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                byte[] temp = new byte[24];
+                fs.Read(temp, 0, 24);
+                fs.Close();
+            }
         }
 
         public int CreateFile(string name) {
@@ -228,6 +233,7 @@ namespace FileSystem {
                         if (fl) fatTable[m] = -1;
                         i++;
                     }
+                    fs.Close();
                 }
             }
 
