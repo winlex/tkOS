@@ -52,6 +52,7 @@ namespace FileSystem {
                     SuperBlock.busy_kl++;
 
                 SuperBlock.move_ht = SuperBlock.busy_kl;
+                //Сдесь указывается размер каталога
                 Record[] hashTable = new Record[64];
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < hashTable.Length; i++)
@@ -91,9 +92,9 @@ namespace FileSystem {
                 fs.Write(bmi, 0, SuperBlock.size_kl);
                 fs.Close();
             }
-            int hashKey = name.GetHashCode() % 64;
+            int hashKey = name.GetHashCode() % hashTable.Length;
             while (hashTable[hashKey].name != "") {
-                if (hashKey == 63)
+                if (hashKey == hashTable.Length-1)
                     hashKey = 0;
                 else
                     hashKey++;
@@ -107,9 +108,9 @@ namespace FileSystem {
         }
         public int DeleteFile(string name) {
             Record[] hashTable = ReadHashTable();
-            int hashKey = name.GetHashCode() % 64;
+            int hashKey = name.GetHashCode() % hashTable.Length;
             while (hashTable[hashKey].name != name) {
-                if (hashKey == 63)
+                if (hashKey == hashTable.Length-1)
                     hashKey = 0;
                 else
                     hashKey++;
@@ -132,9 +133,9 @@ namespace FileSystem {
         }
         public int Rename(string name, string rename) {
             Record[] hashTable = ReadHashTable();
-            int hashKey = name.GetHashCode() % 64;
+            int hashKey = name.GetHashCode() % hashTable.Length;
             while (hashTable[hashKey].name != name) {
-                if (hashKey == 63)
+                if (hashKey == hashTable.Length-1)
                     hashKey = 0;
                 else
                     hashKey++;
@@ -150,9 +151,9 @@ namespace FileSystem {
             if (t + SuperBlock.busy_kl > SuperBlock.count_kl)
                 return 1;
             Record[] hashTable = ReadHashTable();
-            int hashKey = name.GetHashCode() % 1024;
+            int hashKey = name.GetHashCode() % hashTable.Length;
             while (hashTable[hashKey].name != name) {
-                if (hashKey == 1023)
+                if (hashKey == hashTable.Length-1)
                     hashKey = 0;
                 else
                     hashKey++;
@@ -164,15 +165,15 @@ namespace FileSystem {
             fatTable[index] = -1;
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
-                fs.Write(data, 0, 1024);
+                fs.Write(data, 0, SuperBlock.size_in);
                 for (int i = 1; i < t; i++) {
                     fatTable[index] = (short)fatTable.ToList<short>().IndexOf(0);
                     index = fatTable.ToList<short>().IndexOf(0);
                     fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
                     try {
-                        fs.Write(data, i * 1024, 1024);
+                        fs.Write(data, i * SuperBlock.size_in, SuperBlock.size_in);
                     } catch (Exception e) {
-                        fs.Write(data, i * 1024, data.Length % SuperBlock.size_kl);
+                        fs.Write(data, i * SuperBlock.size_in, data.Length % SuperBlock.size_kl);
                     }
                     fatTable[index] = 0;
                 }
@@ -216,6 +217,7 @@ namespace FileSystem {
         }
         public Record[] ReadHashTable() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
+                //Сдесь указывается размер каталога
                 Record[] temp = new Record[64];
                 for (int i = 0; i < temp.Length; i++) {
                     byte[] block = new byte[SuperBlock.size_rec];
