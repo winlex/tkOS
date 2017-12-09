@@ -21,8 +21,8 @@ namespace tkOS {
                         case "CreateFile": disk.CreateFile(key.Split(' ')[1]); break;
                         case "DeleteFile": disk.DeleteFile(key.Split(' ')[1]); break;
                         case "RenameFile": disk.Rename(key.Split(' ')[1], key.Split(' ')[2]); break;
-                        case "WriteFile": disk.WriteData(key.Split(' ')[1], key.Split(' ')[2]); break;
-                        case "ReadFile": Console.WriteLine(disk.ReadData(key.Split(' ')[1], false)); break;
+                        case "WriteFile": disk.WriteData(key.Split(' ')[1], Encoding.UTF8.GetBytes(key.Split(' ')[2])); break;
+                        case "ReadFile": Console.WriteLine(Encoding.UTF8.GetString(disk.ReadData(key.Split(' ')[1], false))); break;
                     }
                 //} catch(Exception e) {
                 //    if (disk == null) Console.WriteLine("Подключите диск!");

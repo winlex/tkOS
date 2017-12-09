@@ -160,8 +160,7 @@ namespace FileSystem {
 
             return 0;
         }
-        public int WriteData(string name, string str) {
-            byte[] data = Encoding.UTF8.GetBytes(str);
+        public int WriteData(string name, byte[] data) {
             double needKl = (double)data.Length / (double)SuperBlock.size_kl;
             int t = Convert.ToInt16(Math.Ceiling(needKl));
             if (t + SuperBlock.busy_kl > SuperBlock.count_kl)
@@ -205,7 +204,7 @@ namespace FileSystem {
             WriteFatTable(fatTable);
             return 0;
         }
-        public string ReadData(string name, bool fl) {
+        public byte[] ReadData(string name, bool fl) {
             byte[] data;
 
             Record[] hashTable = ReadHashTable();
@@ -247,7 +246,7 @@ namespace FileSystem {
                 }
             }
 
-            return Encoding.UTF8.GetString(data); ;
+            return data; ;
         }
         public string GetListFiles() {
             string result = "";
