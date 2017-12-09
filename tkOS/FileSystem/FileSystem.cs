@@ -272,11 +272,21 @@ namespace FileSystem {
                     result += t.name + "\t";
             return result;
         }
-        public string GetListFilesfFull() {
+        public string GetListFilesFull() {
             string result = "";
-            foreach (Record t in ReadHashTable())
-                if (t.name != "")
+            user[] users = ReadUsers();
+            foreach (Record t in ReadHashTable()) {
+                if (t.name != "") {
+                    inode inode = ReadInode(t.inode);
                     result += t.name + "\t";
+                    result += inode.permissions + "\t";
+                    result += inode.size + "\t";
+                    result += inode.dateCreate + "\t";
+                    result += inode.dateModify + "\t";
+                    result += users[inode.UID].name + "\t";
+                    result += users[inode.GID].name + "\n";
+                }
+            }
             return result;
         }
 

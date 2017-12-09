@@ -18,6 +18,7 @@ namespace tkOS {
                         case "OpenDisk": disk = new FileSystem.FileSystem(key.Split(' ')[1]); break;
                         case "CloseDisk": disk.CloseDisk(); break;
                         case "ListFile": Console.WriteLine(disk.GetListFiles()); break;
+                        case "FullListFile": Console.WriteLine(disk.GetListFilesFull()); break;
                         case "CreateFile": disk.CreateFile(key.Split(' ')[1], false); break;
                         case "DeleteFile": disk.DeleteFile(key.Split(' ')[1]); break;
                         case "RenameFile": disk.Rename(key.Split(' ')[1], key.Split(' ')[2]); break;
