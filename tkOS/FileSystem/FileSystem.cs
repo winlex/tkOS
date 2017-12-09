@@ -11,9 +11,7 @@ using System.Security.Cryptography;
 namespace FileSystem {
     public class FileSystem {
         public SuperBlock SuperBlock;
-        public string CurrentPosition = "/";
         public user CurrentUser;
-        public Record[] MainCatalog;
 
         public FileSystem(ushort size) {
             SuperBlock = new SuperBlock(size);
@@ -59,7 +57,6 @@ namespace FileSystem {
                         fs.WriteByte(hashTable[i].GetBytes()[j]);
                 for (int i = 0; i < hashTable.Length * SuperBlock.size_in / SuperBlock.size_kl; i++)
                     SuperBlock.busy_kl++;
-                MainCatalog = hashTable;
                 
                 fs.Seek(SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < SuperBlock.busy_kl; i++)
