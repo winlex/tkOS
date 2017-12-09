@@ -70,24 +70,18 @@ namespace FileSystem {
 
                 fs.Close();
             }
+
             user[] user = new user[5];
             CurrentUser = new user(0, "root", 0, new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes("root")));
-            user guestt = new user(1, "guest", 1, new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes("")));
             user[0] = CurrentUser;
-            int index = CreateFile("users", true);
-            byte[] buser = new byte[64];
-            buser = CurrentUser.GetBytes();
-            buser = buser.Concat(guestt.GetBytes()).ToArray();
-            WriteData("users", buser);
-
-            index = CreateFile("groups",true);
-            byte[] group = new byte[32];
-            group gr = new group(0, "admins");
-            group gr1 = new group(1, "guests");
-            group = gr.getBytes();
-            group = group.Concat(gr1.getBytes()).ToArray();
-            WriteData("groups", group);
-
+            user[1] = new user(1, "guest", 1, new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes("")));
+            group[] group = new group[5];
+            group[0] = new group(0, "admins");
+            group[1] = new group(1, "guests");
+            CreateFile("users", true);
+            CreateFile("groups", true);
+            WriteUsers(user);
+            WriteGroups(group);
         }
         public FileSystem(string path) {
             using (FileStream fs = File.Open(path, FileMode.Open)) {
@@ -337,6 +331,18 @@ namespace FileSystem {
                 fs.Write(inode.GetBytes(), 0, SuperBlock.size_in);
                 fs.Close();
             }
+        }
+        public void WriteUsers(user[] user) {
+            byte[] temp = new byte[SuperBlock.count_us*SuperBlock.size_us];
+            for (int i = 0; i < SuperBlock.count_us; i++)
+                Array.Copy(user[i].GetBytes(), 0, temp, i * SuperBlock.size_us, SuperBlock.size_us);
+            WriteData("users", temp);
+        }
+        public void WriteGroups(group[] group) {
+            byte[] temp = new byte[SuperBlock.count_gr * SuperBlock.size_gr];
+            for (int i = 0; i < SuperBlock.count_gr; i++)
+                Array.Copy(group[i].GetBytes(), 0, temp, i * SuperBlock.size_gr, SuperBlock.size_gr);
+            WriteData("groups", temp);
         }
     }
 

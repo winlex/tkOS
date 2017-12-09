@@ -18,7 +18,7 @@ namespace FileSystem {
             block = false;
         }
 
-        public byte[] getBytes() {
+        public byte[] GetBytes() {
             int size = Marshal.SizeOf(this);
             byte[] arr = new byte[size];
 

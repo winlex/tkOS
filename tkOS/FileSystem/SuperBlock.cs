@@ -18,6 +18,10 @@ namespace FileSystem {
         public ushort move_bmi;
         public ushort size_in;
         public ushort size_rec;
+        public ushort count_us;
+        public ushort count_gr;
+        public ushort size_us;
+        public ushort size_gr;
 
         public SuperBlock(ushort size) {
             type = "tkOS";
@@ -29,7 +33,11 @@ namespace FileSystem {
             move_bmi = 0;//?
             size_in = 80;
             size_rec = 20;
-        }
+            count_us = 2;
+            count_gr = 2;
+            size_us = 32;
+            size_gr = 16;
+    }
 
         public byte[] GetBytes() {
             int size = Marshal.SizeOf(this);
