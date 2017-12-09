@@ -13,8 +13,6 @@ namespace FileSystem {
         public SuperBlock SuperBlock;
         public string CurrentPosition = "/";
         public user CurrentUser;
-        public user[] users;
-        public group[] groups;
         public Record[] MainCatalog;
 
         public FileSystem(ushort size) {
@@ -72,6 +70,23 @@ namespace FileSystem {
 
                 fs.Close();
             }
+            user[] user = new user[5];
+            CurrentUser = new user(0, "root", 0, new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes("root")));
+            user guestt = new user(1, "guest", 1, new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes("")));
+            user[0] = CurrentUser;
+            int index = CreateFile("users", true);
+            byte[] buser = new byte[64];
+            buser = CurrentUser.GetBytes();
+            buser = buser.Concat(guestt.GetBytes()).ToArray();
+            WriteData("users", buser);
+
+            index = CreateFile("groups",true);
+            byte[] group = new byte[32];
+            group gr = new group(0, "admins");
+            group gr1 = new group(1, "guests");
+            group = gr.getBytes();
+            group = group.Concat(gr1.getBytes()).ToArray();
+            WriteData("groups", group);
 
         }
         public FileSystem(string path) {
@@ -91,7 +106,7 @@ namespace FileSystem {
             }
         }
 
-        public int CreateFile(string name) {
+        public int CreateFile(string name, bool block) {
             Record[] hashTable = ReadHashTable();
             int indexI;
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
@@ -108,6 +123,7 @@ namespace FileSystem {
                 fs.Close();
             }
             int hashKey = name.GetHashCode() % hashTable.Length;
+            if (hashKey < 0) hashKey *= -1;
             while (hashTable[hashKey].name != "") {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
@@ -124,6 +140,7 @@ namespace FileSystem {
         public int DeleteFile(string name) {
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
+            if (hashKey < 0) hashKey *= -1;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
@@ -149,6 +166,7 @@ namespace FileSystem {
         public int Rename(string name, string rename) {
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
+            if (hashKey < 0) hashKey *= -1;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
@@ -167,6 +185,7 @@ namespace FileSystem {
                 return 1;
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
+            if (hashKey < 0) hashKey *= -1;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
@@ -209,6 +228,7 @@ namespace FileSystem {
 
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
+            if (hashKey < 0) hashKey *= -1;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length - 1)
                     hashKey = 0;
