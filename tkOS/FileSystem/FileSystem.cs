@@ -363,6 +363,17 @@ namespace FileSystem {
             inode.permissions = per;
             WriteInode(inode, hashTable[hashKey].inode);
         }
+        public void Login(string name, byte[] password) {
+            user[] users = ReadUsers();
+            foreach (user t in users)
+                if (t.name == name)
+                    if (t.password.SequenceEqual<byte>(password)) {
+                        CurrentUser = t;
+                        throw new ArgumentException("Привет, " + t.name + "!");
+                    }
+                    else throw new ArgumentException("Данные не совпадают!");
+                else throw new ArgumentException("Данные не совпадают!");
+        }
 
         public short[] ReadFatTable() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
