@@ -119,6 +119,9 @@ namespace FileSystem {
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
             int t = hashKey;
+            foreach (Record e in hashTable)
+                if (e.name == name)
+                    throw new ArgumentException("Файл с таким именем существует!");
             while (hashTable[hashKey].name != "") {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
