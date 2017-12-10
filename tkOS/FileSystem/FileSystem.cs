@@ -50,7 +50,7 @@ namespace FileSystem {
 
                 SuperBlock.move_ht = SuperBlock.busy_kl;
                 //Сдесь указывается размер каталога
-                Record[] hashTable = new Record[64];
+                Record[] hashTable = new Record[512];
                 fs.Seek(SuperBlock.busy_kl * SuperBlock.size_kl, SeekOrigin.Begin);
                 for (int i = 0; i < hashTable.Length; i++)
                     for (int j = 0; j < hashTable[i].GetBytes().Length; j++)
@@ -312,7 +312,7 @@ namespace FileSystem {
         public Record[] ReadHashTable() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 //Сдесь указывается размер каталога
-                Record[] temp = new Record[64];
+                Record[] temp = new Record[512];
                 for (int i = 0; i < temp.Length; i++) {
                     byte[] block = new byte[SuperBlock.size_rec];
                     fs.Seek(SuperBlock.move_ht * SuperBlock.size_kl + i * SuperBlock.size_rec, SeekOrigin.Begin);
