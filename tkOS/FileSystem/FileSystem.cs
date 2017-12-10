@@ -190,6 +190,7 @@ namespace FileSystem {
             short[] fatTable = ReadFatTable();
             int index = fatTable.ToList<short>().IndexOf(0);
             inode.adr = (short)index;
+            inode.dateModify = DateTime.Now;
             fatTable[index] = -1;
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
