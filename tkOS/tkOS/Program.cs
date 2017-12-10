@@ -30,6 +30,9 @@ namespace tkOS {
                         case "AddGroup": disk.AddGroup(key.Split(' ')[1]); break;
                         case "ListGroups": Console.WriteLine(disk.ListGroups()); break;
                         case "ListUsers": Console.WriteLine(disk.ListUsers()); break;
+                        case "DeleteUser": disk.DeleteUser(key.Split(' ')[1]); break;
+                        case "DeleteGroup": disk.DeleteGroups(key.Split(' ')[1]); break;
+                        case "ChangePermissions": disk.ChangePermissions(key.Split(' ')[1], key.Split(' ')[2]); break;
                     }
                 } catch(Exception e) {
                     if (disk == null) Console.WriteLine("Подключите диск!");

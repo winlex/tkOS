@@ -302,8 +302,22 @@ namespace FileSystem {
                     t = d.ID;
             if (t == -1) throw new ArgumentException("Данной группы не существует!");
             users[users.Length - 1] = new user(users.Length - 1, name, t, password);
-            WriteUsers(users);
             SuperBlock.count_us++;
+            WriteUsers(users);
+        }
+        public void DeleteUser(string name) {
+            user[] users = ReadUsers();
+            for (int i = 0; i < users.Length; i++)
+                if (users[i].name == name)
+                    users[i].block = true;
+            WriteUsers(users);
+        }
+        public void DeleteGroups(string name) {
+            group[] groups = ReadGroups();
+            for (int i = 0; i < groups.Length; i++)
+                if (groups[i].name == name)
+                    groups[i].block = true;
+            WriteGroups(groups);
         }
         public void AddGroup(string name) {
             group[] temp = ReadGroups();
@@ -334,6 +348,20 @@ namespace FileSystem {
                     result += t.name + "\t";
 
             return result;
+        }
+        public void ChangePermissions(string name, string per) {
+            Record[] hashTable = ReadHashTable();
+            int hashKey = name.GetHashCode() % hashTable.Length;
+            if (hashKey < 0) hashKey *= -1;
+            while (hashTable[hashKey].name != name) {
+                if (hashKey == hashTable.Length - 1)
+                    hashKey = 0;
+                else
+                    hashKey++;
+            }
+            inode inode = ReadInode(hashTable[hashKey].inode);
+            inode.permissions = per;
+            WriteInode(inode, hashTable[hashKey].inode);
         }
 
         public short[] ReadFatTable() {
