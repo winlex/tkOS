@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FileSystem;
+using System.Security.Cryptography;
 
 namespace tkOS {
     class Program {
@@ -12,7 +13,7 @@ namespace tkOS {
             while (true) {
                 Console.Write(">");
                 string key = Console.ReadLine();
-                //try {
+                try {
                     switch (key.Split(' ')[0]) {
                         case "CreateDisk": disk = new FileSystem.FileSystem(1024); break;
                         case "OpenDisk": disk = new FileSystem.FileSystem(key.Split(' ')[1]); break;
@@ -25,10 +26,15 @@ namespace tkOS {
                         case "WriteFile": disk.WriteData(key.Split(' ')[1], Encoding.UTF8.GetBytes(key.Split(' ')[2])); break;
                         case "ReadFile": Console.WriteLine(Encoding.UTF8.GetString(disk.ReadData(key.Split(' ')[1], false))); break;
                         case "CurrentUser": Console.WriteLine(disk.CurrentUser.name); break;
+                        case "AddUser": disk.AddUser(key.Split(' ')[1], new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(key.Split(' ')[2])), key.Split(' ')[3]); break;
+                        case "AddGroup": disk.AddGroup(key.Split(' ')[1]); break;
+                        case "ListGroups": Console.WriteLine(disk.ListGroups()); break;
+                        case "ListUsers": Console.WriteLine(disk.ListUsers()); break;
                     }
-                //} catch(Exception e) {
-                //    if (disk == null) Console.WriteLine("Подключите диск!");
-                //}
+                } catch(Exception e) {
+                    if (disk == null) Console.WriteLine("Подключите диск!");
+                    Console.WriteLine(e.Message);
+                }
             }
         }
     }

@@ -313,8 +313,26 @@ namespace FileSystem {
             for (int i = 0; i < temp.Length; i++)
                 groups[i] = temp[i];
             groups[groups.Length - 1] = new group(groups.Length - 1,name);
-            WriteGroups(groups);
             SuperBlock.count_gr++;
+            WriteGroups(groups);
+        }
+        public string ListGroups() {
+            string result = "";
+            group[] groups = ReadGroups();
+            foreach (group t in groups)
+                if(!t.block)
+                    result += t.name + "\t";
+
+            return result;
+        }
+        public string ListUsers() {
+            string result = "";
+            user[] users = ReadUsers();
+            foreach (user t in users)
+                if (!t.block)
+                    result += t.name + "\t";
+
+            return result;
         }
 
         public short[] ReadFatTable() {
