@@ -118,11 +118,14 @@ namespace FileSystem {
             }
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
+            int t = hashKey;
             while (hashTable[hashKey].name != "") {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
-                else
+                else {
                     hashKey++;
+                    if (hashKey == t) throw new ArgumentException("Файл не найден!");
+                }
             }
             Record record = new Record((ushort)hashKey, name, (ushort)indexI);
             hashTable[hashKey] = record;
@@ -134,22 +137,25 @@ namespace FileSystem {
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
+            int t = hashKey;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
-                else
+                else {
                     hashKey++;
+                    if (hashKey == t) throw new ArgumentException("Файл не найден!");
+                }
             }
             hashTable[hashKey].name = "";
             inode inode = ReadInode(hashTable[hashKey].inode);
             if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             short[] fatTable = ReadFatTable();
-            short t = inode.adr;
+            short x = inode.adr;
             inode.adr = -1;
             SuperBlock.busy_kl--;
-            while(t != -1) {
-                t = fatTable[t];
-                fatTable[t] = -1;
+            while(x != -1) {
+                x = fatTable[x];
+                fatTable[x] = -1;
                 SuperBlock.busy_kl--;
             }
             WriteFatTable(fatTable);
@@ -161,11 +167,14 @@ namespace FileSystem {
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
+            int t = hashKey;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
-                else
+                else {
                     hashKey++;
+                    if (hashKey == t) throw new ArgumentException("Файл не найден!");
+                }
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
             if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
@@ -176,17 +185,20 @@ namespace FileSystem {
         }
         public int WriteData(string name, byte[] data) {
             double needKl = (double)data.Length / (double)SuperBlock.size_kl;
-            int t = Convert.ToInt16(Math.Ceiling(needKl));
-            if (t + SuperBlock.busy_kl > SuperBlock.count_kl)
+            int c = Convert.ToInt16(Math.Ceiling(needKl));
+            if (c + SuperBlock.busy_kl > SuperBlock.count_kl)
                 return 1;
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
+            int t = hashKey;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length-1)
                     hashKey = 0;
-                else
+                else {
                     hashKey++;
+                    if (hashKey == t) throw new ArgumentException("Файл не найден!");
+                }
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
             if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
@@ -202,7 +214,7 @@ namespace FileSystem {
                 } catch (Exception e) {
                     fs.Write(data, 0, data.Length);
                 }
-                for (int i = 1; i < t; i++) {
+                for (int i = 1; i < c; i++) {
                     fatTable[index] = (short)fatTable.ToList<short>().IndexOf(0);
                     index = fatTable.ToList<short>().IndexOf(0);
                     fs.Seek(index * SuperBlock.size_kl, SeekOrigin.Begin);
@@ -221,20 +233,23 @@ namespace FileSystem {
             WriteFatTable(fatTable);
             return 0;
         }
-        public byte[] ReadData(string name, bool fl) {
+        public byte[] ReadData(string name, bool fl,bool sys) {
             byte[] data;
 
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
+            int t = hashKey;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length - 1)
                     hashKey = 0;
-                else
+                else {
                     hashKey++;
+                    if (hashKey == t) throw new ArgumentException("Файл не найден!");
+                }
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
-            if (!CheckPermissions(0, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
+            if (!sys) if (!CheckPermissions(0, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             data = new byte[inode.size];
             short[] fatTable = ReadFatTable();
 
@@ -246,18 +261,18 @@ namespace FileSystem {
                     } catch (Exception e) {
                         fs.Read(data, 0, (int)inode.size);
                     }
-                    int t = fatTable[inode.adr];
+                    int c = fatTable[inode.adr];
                     if (fl) inode.adr = -1;
                     int i = 1;
-                    while (t != -1) {
-                        fs.Seek(t * SuperBlock.size_kl, SeekOrigin.Begin);
+                    while (c != -1) {
+                        fs.Seek(c * SuperBlock.size_kl, SeekOrigin.Begin);
                         try {
                             fs.Read(data, i *SuperBlock.size_kl, SuperBlock.size_kl);
                         } catch (Exception e) {
                             fs.Read(data, i * SuperBlock.size_kl, (int)inode.size % SuperBlock.size_kl);
                         }
-                        int m = t;
-                        t = fatTable[t];
+                        int m = c;
+                        c = fatTable[c];
                         if (fl) fatTable[m] = -1;
                         i++;
                     }
@@ -363,11 +378,14 @@ namespace FileSystem {
             Record[] hashTable = ReadHashTable();
             int hashKey = name.GetHashCode() % hashTable.Length;
             if (hashKey < 0) hashKey *= -1;
+            int t = hashKey;
             while (hashTable[hashKey].name != name) {
                 if (hashKey == hashTable.Length - 1)
                     hashKey = 0;
-                else
+                else {
                     hashKey++;
+                    if (hashKey == t) throw new ArgumentException("Файл не найден!");
+                }
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
             if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
@@ -383,7 +401,7 @@ namespace FileSystem {
                         throw new ArgumentException("Привет, " + t.name + "!");
                     }
                     else throw new ArgumentException("Данные не совпадают!");
-                else throw new ArgumentException("Данные не совпадают!");
+            throw new ArgumentException("Данные не совпадают!");
         }
 
         public short[] ReadFatTable() {
@@ -455,7 +473,7 @@ namespace FileSystem {
             WriteData("users", temp);
         }
         public user[] ReadUsers() {
-            byte[] temp = ReadData("users", false);
+            byte[] temp = ReadData("users", false, true);
             user[] users = new user[SuperBlock.count_us];
             for (int i = 0; i < SuperBlock.count_us; i++) {
                 byte[] block = new byte[SuperBlock.size_us];
@@ -471,7 +489,7 @@ namespace FileSystem {
             WriteData("groups", temp);
         }
         public group[] ReadGroups() {
-            byte[] temp = ReadData("groups", false);
+            byte[] temp = ReadData("groups", false, true);
             group[] groups = new group[SuperBlock.count_gr];
             for (int i = 0; i < SuperBlock.count_gr; i++) {
                 byte[] block = new byte[SuperBlock.size_gr];
