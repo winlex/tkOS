@@ -100,7 +100,8 @@ namespace FileSystem {
             }
         }
 
-        public int CreateFile(string name, bool block) {
+        public void CreateFile(string name, bool block) {
+            if (CurrentUser.GID == 1) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             Record[] hashTable = ReadHashTable();
             int indexI;
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
@@ -108,8 +109,7 @@ namespace FileSystem {
                 fs.Seek(SuperBlock.move_bmi, SeekOrigin.Begin);
                 fs.Read(bmi, 0, SuperBlock.count_kl);
                 indexI = bmi.ToList<byte>().IndexOf(0);
-                if (indexI == -1)
-                    return 1;
+                if (indexI == -1) throw new ArgumentException("Свободных инодов больше нет!");
                 //////////////////////////////////////
                 bmi[indexI] = 1;
                 fs.Seek(SuperBlock.move_bmi, SeekOrigin.Begin);
@@ -129,7 +129,6 @@ namespace FileSystem {
             inode inode = new inode(CurrentUser.ID, CurrentUser.GID, 0);
             WriteInode(inode, indexI);
             WriteHashTable(hashTable);
-            return 0;
         }
         public int DeleteFile(string name) {
             Record[] hashTable = ReadHashTable();
@@ -143,6 +142,7 @@ namespace FileSystem {
             }
             hashTable[hashKey].name = "";
             inode inode = ReadInode(hashTable[hashKey].inode);
+            if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             short[] fatTable = ReadFatTable();
             short t = inode.adr;
             inode.adr = -1;
@@ -167,6 +167,8 @@ namespace FileSystem {
                 else
                     hashKey++;
             }
+            inode inode = ReadInode(hashTable[hashKey].inode);
+            if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             hashTable[hashKey].name = rename;
             WriteHashTable(hashTable);
 
@@ -187,6 +189,7 @@ namespace FileSystem {
                     hashKey++;
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
+            if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             short[] fatTable = ReadFatTable();
             int index = fatTable.ToList<short>().IndexOf(0);
             inode.adr = (short)index;
@@ -231,6 +234,7 @@ namespace FileSystem {
                     hashKey++;
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
+            if (!CheckPermissions(0, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             data = new byte[inode.size];
             short[] fatTable = ReadFatTable();
 
@@ -288,6 +292,7 @@ namespace FileSystem {
             return result;
         }
         public void AddUser(string name, byte[] password, string group) {
+            if (CurrentUser.GID != 0) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             user[] temp = ReadUsers();
             foreach (user g in temp)
                 if (g.name == name)
@@ -306,6 +311,7 @@ namespace FileSystem {
             WriteUsers(users);
         }
         public void DeleteUser(string name) {
+            if (CurrentUser.GID != 0) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             user[] users = ReadUsers();
             for (int i = 0; i < users.Length; i++)
                 if (users[i].name == name)
@@ -313,6 +319,7 @@ namespace FileSystem {
             WriteUsers(users);
         }
         public void DeleteGroups(string name) {
+            if (CurrentUser.GID != 0) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             group[] groups = ReadGroups();
             for (int i = 0; i < groups.Length; i++)
                 if (groups[i].name == name)
@@ -320,6 +327,7 @@ namespace FileSystem {
             WriteGroups(groups);
         }
         public void AddGroup(string name) {
+            if(CurrentUser.GID != 0) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             group[] temp = ReadGroups();
             foreach (group d in temp)
                 if (d.name == name)
@@ -332,6 +340,7 @@ namespace FileSystem {
             WriteGroups(groups);
         }
         public string ListGroups() {
+            if (CurrentUser.GID == 1) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             string result = "";
             group[] groups = ReadGroups();
             foreach (group t in groups)
@@ -341,6 +350,7 @@ namespace FileSystem {
             return result;
         }
         public string ListUsers() {
+            if (CurrentUser.GID == 1) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             string result = "";
             user[] users = ReadUsers();
             foreach (user t in users)
@@ -360,6 +370,7 @@ namespace FileSystem {
                     hashKey++;
             }
             inode inode = ReadInode(hashTable[hashKey].inode);
+            if (!CheckPermissions(1, inode)) throw new ArgumentException("У Вас нет прав на это дейтвие!");
             inode.permissions = per;
             WriteInode(inode, hashTable[hashKey].inode);
         }
@@ -468,6 +479,18 @@ namespace FileSystem {
                 groups[i] = new group(block);
             }
             return groups;
+        }
+        public bool CheckPermissions(int per,inode inode) {
+            if (CurrentUser.GID == 0)
+                return true;
+            if (CurrentUser.ID == inode.UID && inode.permissions[per] != '-')
+                return true;
+            if (CurrentUser.GID == inode.GID && inode.permissions[per+3] != '-')
+                return true;
+            if (inode.permissions[per + 6] != '-')
+                return true;
+
+            return false;
         }
     }
 }
