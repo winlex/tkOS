@@ -286,6 +286,36 @@ namespace FileSystem {
             }
             return result;
         }
+        public void AddUser(string name, byte[] password, string group) {
+            user[] temp = ReadUsers();
+            foreach (user g in temp)
+                if (g.name == name)
+                    throw new ArgumentException("Данный пользователь уже существует!");
+            user[] users = new user[temp.Length + 1];
+            for (int i = 0; i < temp.Length; i++)
+                users[i] = temp[i];
+            group[] groups = ReadGroups();
+            int t = -1;
+            foreach (group d in groups)
+                if (d.name == group)
+                    t = d.ID;
+            if (t == -1) throw new ArgumentException("Данной группы не существует!");
+            users[users.Length - 1] = new user(users.Length - 1, name, t, password);
+            WriteUsers(users);
+            SuperBlock.count_us++;
+        }
+        public void AddGroup(string name) {
+            group[] temp = ReadGroups();
+            foreach (group d in temp)
+                if (d.name == name)
+                    throw new ArgumentException("Данная группа существует уже!");
+            group[] groups = new group[temp.Length + 1];
+            for (int i = 0; i < temp.Length; i++)
+                groups[i] = temp[i];
+            groups[groups.Length - 1] = new group(groups.Length - 1,name);
+            WriteGroups(groups);
+            SuperBlock.count_gr++;
+        }
 
         public short[] ReadFatTable() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
@@ -382,6 +412,4 @@ namespace FileSystem {
             return groups;
         }
     }
-
-
 }
