@@ -84,9 +84,9 @@ namespace FileSystem {
         }
         public FileSystem(string path) {
             using (FileStream fs = File.Open(path, FileMode.Open)) {
-                byte[] temp = new byte[24];
+                byte[] temp = new byte[32];
                 fs.Seek(0, SeekOrigin.Begin);
-                fs.Read(temp, 0, 24);
+                fs.Read(temp, 0, 32);
                 SuperBlock = new SuperBlock(temp);
                 fs.Close();
             }

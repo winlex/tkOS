@@ -34,7 +34,7 @@ namespace tkOS {
                         case "DeleteGroup": disk.DeleteGroups(key.Split(' ')[1]); break;
                         case "ChangePermissions": disk.ChangePermissions(key.Split(' ')[1], key.Split(' ')[2]); break;
                         case "Login": disk.Login(key.Split(' ')[1], new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(key.Split(' ')[2]))); break;
-                        default: Console.WriteLine("Команда неизвестна!");
+                        default: Console.WriteLine("Команда неизвестна!"); break;
                     }
                 } catch(Exception e) {
                     if (disk == null) Console.WriteLine("Подключите диск!");
