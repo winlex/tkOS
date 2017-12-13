@@ -95,7 +95,7 @@ namespace FileSystem {
         public void CloseDisk() {
             using (FileStream fs = File.Open(SuperBlock.count_kl + ".disk", FileMode.Open)) {
                 fs.Seek(0, SeekOrigin.Begin);
-                fs.Write(SuperBlock.GetBytes(), 0, 24);
+                fs.Write(SuperBlock.GetBytes(), 0, 32);
                 fs.Close();
             }
         }
@@ -321,7 +321,7 @@ namespace FileSystem {
             group[] groups = ReadGroups();
             int t = -1;
             foreach (group d in groups)
-                if (d.name == group)
+                if (d.name == group && !d.block)
                     t = d.ID;
             if (t == -1) throw new ArgumentException("Данной группы не существует!");
             users[users.Length - 1] = new user(users.Length - 1, name, t, password);
@@ -398,7 +398,7 @@ namespace FileSystem {
         public void Login(string name, byte[] password) {
             user[] users = ReadUsers();
             foreach (user t in users)
-                if (t.name == name)
+                if (t.name == name && !t.block)
                     if (t.password.SequenceEqual<byte>(password)) {
                         CurrentUser = t;
                         throw new ArgumentException("Привет, " + t.name + "!");

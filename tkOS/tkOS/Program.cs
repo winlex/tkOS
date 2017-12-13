@@ -23,7 +23,10 @@ namespace tkOS {
                         case "CreateFile": disk.CreateFile(key.Split(' ')[1], false); break;
                         case "DeleteFile": disk.DeleteFile(key.Split(' ')[1]); break;
                         case "RenameFile": disk.Rename(key.Split(' ')[1], key.Split(' ')[2]); break;
-                        case "WriteFile": disk.WriteData(key.Split(' ')[1], Encoding.UTF8.GetBytes(key.Split(' ')[2])); break;
+                        case "WriteFile":
+                            string text = key.Substring(key.Split(' ')[1].Length);
+                            disk.WriteData(key.Split(' ')[1], Encoding.UTF8.GetBytes(text));
+                            break;
                         case "ReadFile": Console.WriteLine(Encoding.UTF8.GetString(disk.ReadData(key.Split(' ')[1], false, false))); break;
                         case "CurrentUser": Console.WriteLine(disk.CurrentUser.name); break;
                         case "AddUser": disk.AddUser(key.Split(' ')[1], new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(key.Split(' ')[2])), key.Split(' ')[3]); break;
